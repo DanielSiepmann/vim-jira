@@ -6,6 +6,10 @@ if !exists('main_syntax')
   let main_syntax = 'jira'
 endif
 
+syn match jiraLineStart "^[<@]\@!" nextgroup=@jiraBlock,htmlSpecialChar
+
+syn cluster jiraBlock contains=jiraHeading,jiraBlockquote,jiraListMarker,jiraCodeBlock,jiraRule
+syn cluster jiraInline contains=jiraLineBreak,jiraLinkText,jiraItalic,jiraBold,jiraCode,jiraEscape,@htmlTop,jiraError
 
 highlight jiraMarkOn ctermfg=yellow guifg=yellow
 highlight jiraMarkOff ctermfg=darkgrey guifg=darkgrey
@@ -32,14 +36,14 @@ syntax match jiraMarkNo    /(n)/
 syntax match jiraMarkInfo  /(?)/
 syntax cluster jiraMark contains=jiraMarkOn,jiraMarkOff,jiraMarkCheck,jiraMarkError,jiraMarkWarn,jiraMarkYes,jiraMarkNo
 
-syntax match jiraStrong /\*[^*]\+\*/ excludenl contains=ALL
-syntax match jiraEmphasis /_[^_]\+_/ excludenl contains=ALL
-syntax match jiraCitation /??[^?]\+??/ excludenl contains=ALL
-syntax match jiraDeleted /(\@<=^|\W)-[^-]\+-(\@<=\W|$)/ excludenl contains=ALL
-syntax match jiraInserted /+[^+]\++/ excludenl contains=ALL
-syntax match jiraSuperscript /^[^\^]\+^/ excludenl contains=ALL
-syntax match jiraSubscript /\~[^\~]\+\~/ excludenl contains=ALL
-syntax match jiraBlockquote /^bq\. .*/ excludenl contains=ALL
+syntax region jiraStrong start="\S\@<=\*\|\*\S\@=" end="\S\@<=\*\|\*\S\@=" keepend contains=jiraLineStart
+syntax region jiraEmphasis start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=jiraLineStart
+syntax region jiraCitation start="\S\@<=??\|??\S\@=" end="\S\@<=??\|??\S\@=" keepend contains=jiraLineStart
+syntax match jiraDeleted /\(\S\@<=-\|-\)[^-[:space:]][^-]*\(-\|-\S\@=\)/ excludenl
+syntax region jiraInserted start="\S\@<=+\|+\S\@=" end="\S\@<=+\|+\S\@=" keepend contains=jiraLineStart
+syntax region jiraSuperscript start="\S\@<=\^\|\^\S\@=" end="\S\@<=\^\|\^\S\@=" keepend contains=jiraLineStart
+syntax region jiraSuperscript start="\S\@<=\~\|\~\S\@=" end="\S\@<=\~\|\~\S\@=" keepend contains=jiraLineStart
+syntax match jiraBlockquote /^bq\. .*/ excludenl
 syntax region jiraQuote start="{quote}" end="{quote}" fold contains=ALL keepend
 syntax region jiraQuote start="{quote:" end="{quote}" fold contains=ALL keepend
 syntax region jiraQuoteTitle matchgroup=hide start="{quote:.\{-}\(title=\)" end="|.*}" contained
@@ -51,7 +55,14 @@ syntax match jiraColorEnd /{color}/ contained
 
 syntax match jiraHeading /^h[1-6]\. .*/ excludenl contains=ALL
 
-syntax match jiraListMarker /^[*#]\+\s/
+syntax match jiraListMarker /^[-*#]\+\s/
+
+
+syntax region jiraLink start="\[" end="\]" keepend contains=jiraLineStart
+
+syntax match jiraDash "--" excludenl
+syntax match jiraDash "---" excludenl
+syntax match jiraHorizontalRule "----" excludenl
 
 syntax region jiraNoFormat matchgroup=hide start="{noformat}" end="{noformat}" keepend
 
