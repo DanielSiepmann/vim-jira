@@ -39,3 +39,5 @@ syntax region jiraTableHeader start="^\s*||" end="||\s*$" contains=ALL
 syntax region jiraTableRow start="^\s*|" end="|\s*$" contains=ALL
 
 set foldmethod=syntax
+
+let b:current_syntax="jira"
