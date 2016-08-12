@@ -39,7 +39,7 @@ syntax cluster jiraMark contains=jiraMarkOn,jiraMarkOff,jiraMarkCheck,jiraMarkEr
 syntax region jiraStrong start="\S\@<=\*\|\*\S\@=" end="\S\@<=\*\|\*\S\@=" keepend contains=jiraLineStart
 syntax region jiraEmphasis start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=jiraLineStart
 syntax region jiraCitation start="\S\@<=??\|??\S\@=" end="\S\@<=??\|??\S\@=" keepend contains=jiraLineStart
-syntax match jiraDeleted /\(\S\@<=-\|-\)[^-[:space:]][^-]*\(-\|-\S\@=\)/ excludenl
+"syntax match jiraDeleted /\(\S\@<=-\|-\)[^-[:space:]][^-]*\(-\|-\S\@=\)/ excludenl
 syntax region jiraInserted start="\S\@<=+\|+\S\@=" end="\S\@<=+\|+\S\@=" keepend contains=jiraLineStart
 syntax region jiraSuperscript start="\S\@<=\^\|\^\S\@=" end="\S\@<=\^\|\^\S\@=" keepend contains=jiraLineStart
 syntax region jiraSuperscript start="\S\@<=\~\|\~\S\@=" end="\S\@<=\~\|\~\S\@=" keepend contains=jiraLineStart
@@ -60,6 +60,7 @@ syntax match jiraListMarker /^[-*#]\+\s/
 
 syntax region jiraLink start="\[" end="\]" keepend contains=jiraLineStart
 
+syntax match jiraNewline "\\\\" excludenl
 syntax match jiraDash "--" excludenl
 syntax match jiraDash "---" excludenl
 syntax match jiraHorizontalRule "----" excludenl
@@ -79,7 +80,7 @@ syntax region jiraTableHeader start="^\s*||" end="||\s*$" contains=ALL
 syntax region jiraTableRow start="^\s*|" end="|\s*$" contains=ALL
 
 " TODO doesn't handle ticket w/markup around it.
-syntax match jiraTicketId /\<[A-Za-z]\+-[0-9]\+\>/
+syntax match jiraTicketId /\<[A-Z]\+-[0-9]\+\>/
 
 hi def link jiraStrong                    jiraBold
 hi def link jiraEmphasis                  jiraItalic
@@ -97,6 +98,8 @@ hi def link jiraColorEnd                  hide
 hi def link jiraHeading                   Title
 hi def link jiraListMarker                Statement
 
+hi def link jiraLink                      htmlTag " blue
+
 hi def link jiraPanelTitle                Title
 hi def link jiraPanelEnd                  hide
 hi def link jiraCodeTitle                 Title
@@ -105,7 +108,11 @@ hi def link jiraCodeTitle                 Title
 hi def link jiraCodeEnd                   hide
 hi def link jiraTableHeader               jiraBold
 
-hi def link jiraTicketId                  jiraBold
+hi def link jiraDash                      Special
+hi def link jiraHorizontalRule            Special
+hi def link jiraNewline                   Special
+
+hi def link jiraTicketId                  jiraLink
 
 set foldmethod=syntax
 
