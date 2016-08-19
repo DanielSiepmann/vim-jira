@@ -20,7 +20,6 @@ highlight jiraMarkYes ctermfg=green guifg=green
 highlight jiraMarkNo ctermfg=red guifg=red
 highlight jiraMarkInfo ctermfg=blue guifg=blue
 
-highlight hide guifg=darkgrey ctermfg=darkgrey
 highlight jiraBold gui=bold cterm=bold
 highlight jiraItalic gui=italic cterm=underline
 
@@ -40,18 +39,47 @@ syntax region jiraStrong start="\S\@<=\*\|\*\S\@=" end="\S\@<=\*\|\*\S\@=" keepe
 syntax region jiraEmphasis start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=jiraLineStart
 syntax region jiraCitation start="\S\@<=??\|??\S\@=" end="\S\@<=??\|??\S\@=" keepend contains=jiraLineStart
 "syntax match jiraDeleted /\(\S\@<=-\|-\)[^-[:space:]][^-]*\(-\|-\S\@=\)/ excludenl
-syntax region jiraInserted start="\S\@<=+\|+\S\@=" end="\S\@<=+\|+\S\@=" keepend contains=jiraLineStart
+"syntax region jiraInserted start="\S\@<=+\|+\S\@=" end="\S\@<=+\|+\S\@=" keepend contains=jiraLineStart
 syntax region jiraSuperscript start="\S\@<=\^\|\^\S\@=" end="\S\@<=\^\|\^\S\@=" keepend contains=jiraLineStart
 syntax region jiraSuperscript start="\S\@<=\~\|\~\S\@=" end="\S\@<=\~\|\~\S\@=" keepend contains=jiraLineStart
 syntax match jiraBlockquote /^bq\. .*/ excludenl
-syntax region jiraQuote start="{quote}" end="{quote}" fold contains=ALL keepend
-syntax region jiraQuote start="{quote:" end="{quote}" fold contains=ALL keepend
-syntax region jiraQuoteTitle matchgroup=hide start="{quote:.\{-}\(title=\)" end="|.*}" contained
-syntax match jiraQuoteEnd /{quote}/ contained
-syntax region jiraColor start="{color}" end="{color}" fold contains=ALL keepend
-syntax region jiraColor start="{color:" end="{color}" fold contains=ALL keepend
-syntax region jiraColorTitle matchgroup=hide start="{color:.\{-}" end="|.*}" contained
-syntax match jiraColorEnd /{color}/ contained
+
+syn region  jiraString   contained start="{" end="}" contains=jiraSpecialChar,javaScriptExpression,@jiraPreproc
+syn match   jiraValue    contained "=[\t ]*[^:|}]*"hs=s+1   contains=javaScriptExpression,@jiraPreproc
+syn region  jiraEndTag             start="{"      end="}" contains=jiraTagN,jiraTagError
+syn region  jiraTag                start="{"      end="}" fold contains=jiraTagN,jiraString,jiraArg,jiraValue,jiraTagError,jiraEvent,jiraCssDefinition,@jiraPreproc,@jiraArgCluster
+syn match   jiraTagN     contained +{\s*[-a-zA-Z0-9]\++hs=s+1 contains=jiraTagName,jiraSpecialTagName,@jiraTagNameCluster
+syn match   jiraTagError contained "[^}]{"ms=s+1
+
+
+" tag names
+syn keyword jiraTagName contained code color noformat panel quote
+
+" arg names
+syn keyword jiraArg contained title
+syn match jiraArg contained "[a-zA-Z0-9]\+" " e.g. languages for code
+
+
+"syntax region jiraQuote start="{quote}" end="{quote}" fold contains=ALL keepend
+"syntax region jiraQuote start="{quote:" end="{quote}" fold contains=ALL keepend
+"syntax region jiraQuoteTitle matchgroup=hide start="{quote:.\{-}\(title=\)" end="|.*}" contained
+"syntax match jiraQuoteEnd /{quote}/ contained
+"
+"syntax region jiraColor start="{color}" end="{color}" fold contains=ALL keepend
+"syntax region jiraColor start="{color:" end="{color}" fold contains=ALL keepend
+"syntax region jiraColorTitle matchgroup=hide start="{color:.\{-}" end="|.*}" contained
+"syntax match jiraColorEnd /{color}/ contained
+"
+"syntax region jiraNoFormat matchgroup=hide start="{noformat}" end="{noformat}" keepend
+"
+"syntax region jiraPanel start="{panel:[^}]*}" end="{panel}" fold contains=ALL keepend
+"syntax region jiraPanelTitle matchgroup=hide start="{panel:.\{-}\(title=\)[^}]*}" end="|.*}" contained
+"syntax match jiraPanelEnd /{panel}/ contained
+"
+"syntax region jiraCode start="{code}" end="{code}" fold contains=ALL keepend
+"syntax region jiraCode start="{code:[^}]*}" end="{code}" fold contains=ALL keepend
+"syntax match jiraCodeEnd /{code}/ contained
+
 
 syntax match jiraHeading /^h[1-6]\. .*/ excludenl contains=ALL
 
@@ -64,17 +92,6 @@ syntax match jiraNewline "\\\\" excludenl
 syntax match jiraDash "--" excludenl
 syntax match jiraDash "---" excludenl
 syntax match jiraHorizontalRule "----" excludenl
-
-syntax region jiraNoFormat matchgroup=hide start="{noformat}" end="{noformat}" keepend
-
-syntax region jiraPanel start="{panel:" end="{panel}" fold contains=ALL keepend
-syntax region jiraPanelTitle matchgroup=hide start="{panel:.\{-}\(title=\)" end="|.*}" contained
-syntax match jiraPanelEnd /{panel}/ contained
-
-syntax region jiraCode start="{code}" end="{code}" fold contains=ALL keepend
-syntax region jiraCode start="{code:" end="{code}" fold contains=ALL keepend
-syntax region jiraCodeTitle matchgroup=hide start="{code:.\{-}\(title=\)" end="|.*}" contained
-syntax match jiraCodeEnd /{code}/ contained
 
 syntax region jiraTableHeader start="^\s*||" end="||\s*$" contains=ALL
 syntax region jiraTableRow start="^\s*|" end="|\s*$" contains=ALL
@@ -90,22 +107,33 @@ hi def link jiraInserted                  Underlined
 hi def link jiraSuperscript               Special
 hi def link jiraSubscript                 Special
 hi def link jiraBlockquote                Comment
-hi def link jiraQuoteTitle                Title
-hi def link jiraQuoteEnd                  hide
-hi def link jiraColorTitle                Title
-hi def link jiraColorEnd                  hide
 
 hi def link jiraHeading                   Title
 hi def link jiraListMarker                Statement
 
-hi def link jiraLink                      htmlTag " blue
+hi def link jiraLink                      Underlined
 
+hi def link jiraTag                       Statement
+hi def link jiraTagName                   htmlTagName
+hi def jiraArg gui=bold guifg=darkRed
+hi def link jiraValue                     String
+
+hi def link jiraNoFormat                  jiraTag
+hi def link jiraQuote                     jiraTag
+hi def link jiraQuoteTitle                Title
+hi def link jiraQuoteEnd                  jiraTag
+hi def link jiraColor                     jiraTag
+hi def link jiraColorTitle                Title
+hi def link jiraColorEnd                  jiraTag
+hi def link jiraPanel                     jiraTag
 hi def link jiraPanelTitle                Title
-hi def link jiraPanelEnd                  hide
+hi def link jiraPanelEnd                  jiraTag
+hi def link jiraCode                      jiraTag
 hi def link jiraCodeTitle                 Title
-hi def link jiraCodeEnd                   hide
+hi def link jiraCodeEnd                   jiraTag
 hi def link jiraCodeTitle                 Title
-hi def link jiraCodeEnd                   hide
+hi def link jiraCodeEnd                   jiraTag
+
 hi def link jiraTableHeader               jiraBold
 
 hi def link jiraDash                      Special
