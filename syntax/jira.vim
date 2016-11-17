@@ -10,7 +10,7 @@ endif
 syn match jiraLineStart "^[<@]\@!" nextgroup=@jiraBlock,htmlSpecialChar
 
 syn cluster jiraBlock contains=jiraHeading,jiraBlockquote,jiraListMarker,jiraCodeBlock,jiraRule
-syn cluster jiraInline contains=jiraLineBreak,jiraLinkText,jiraItalic,jiraBold,jiraCode,jiraEscape,@htmlTop,jiraError
+syn cluster jiraInline contains=jiraLineBreak,jiraLinkText,jiraItalic,jiraBold,jiraStrikethrough,jiraCode,jiraEscape,@htmlTop,jiraError
 
 highlight jiraMarkOn ctermfg=yellow guifg=yellow
 highlight jiraMarkOff ctermfg=darkgrey guifg=darkgrey
@@ -23,6 +23,7 @@ highlight jiraMarkInfo ctermfg=blue guifg=blue
 
 highlight jiraBold gui=bold cterm=bold
 highlight jiraItalic gui=italic cterm=underline
+highlight jiraStrikethrough gui=italic cterm=italic guifg=#888888 ctermfg=darkgrey
 
 " TODO: Figure out how to make conceal chars the correct color
 "
@@ -39,7 +40,8 @@ syntax cluster jiraMark contains=jiraMarkOn,jiraMarkOff,jiraMarkCheck,jiraMarkEr
 syntax region jiraStrong start="\S\@<=\*\|\*\S\@=" end="\S\@<=\*\|\*\S\@=" keepend contains=jiraLineStart
 syntax region jiraEmphasis start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=jiraLineStart
 syntax region jiraCitation start="\S\@<=??\|??\S\@=" end="\S\@<=??\|??\S\@=" keepend contains=jiraLineStart
-"syntax match jiraDeleted /\(\S\@<=-\|-\)[^-[:space:]][^-]*\(-\|-\S\@=\)/ excludenl
+"syntax region jiraDeleted start="\%(^\|[^\w-]\)\@<=-[^\s-]" end="-\%($\|-[^\w-]\)\@="
+"syntax match jiraDeleted +\%(\%([^\w-]\|^\)\@<=-[^\s-]\)-[^-[:space:]][^-]*\(-\|-\S\@=\)+ excludenl
 "syntax region jiraInserted start="\S\@<=+\|+\S\@=" end="\S\@<=+\|+\S\@=" keepend contains=jiraLineStart
 syntax region jiraSuperscript start="\S\@<=\^\|\^\S\@=" end="\S\@<=\^\|\^\S\@=" keepend contains=jiraLineStart
 syntax region jiraSuperscript start="\S\@<=\~\|\~\S\@=" end="\S\@<=\~\|\~\S\@=" keepend contains=jiraLineStart
@@ -275,7 +277,7 @@ syntax region jiraNoformat
 
 syntax match jiraHeading /^h[1-6]\. .*/ excludenl contains=ALL
 
-syntax match jiraListMarker /^[-*#]\+\s/
+syntax match jiraListMarker "^[-*#]\+\%(\s\)\@=" contained
 
 
 syntax region jiraLink start="\[" end="\]" keepend contains=jiraLineStart
@@ -308,7 +310,7 @@ syntax match jiraTicketId /\<[A-Z]\+-[0-9]\+\>/
 hi def link jiraStrong			jiraBold
 hi def link jiraEmphasis		jiraItalic
 hi def link jiraCitation		jiraItalic
-hi def link jiraDeleted			Special
+hi def link jiraDeleted			jiraStrikethrough
 hi def link jiraInserted		Underlined
 hi def link jiraSuperscript		Special
 hi def link jiraSubscript		Special
