@@ -47,6 +47,7 @@ syntax region jiraSuperscript start="\S\@<=\^\|\^\S\@=" end="\S\@<=\^\|\^\S\@=" 
 syntax region jiraSuperscript start="\S\@<=\~\|\~\S\@=" end="\S\@<=\~\|\~\S\@=" keepend contains=jiraLineStart
 syntax match jiraBlockquote /^bq\. .*/ excludenl
 
+
 " arg names
 syn keyword jiraArg contained title
 syn match jiraArg contained "[a-zA-Z0-9]\+" " e.g. languages for code
@@ -150,7 +151,7 @@ if exists('g:jira_syntax_folding')
     " s^^^^^^^^^^^^^e
     "
     syn region   jiraTag
-	\ matchgroup=jiraTag start=+{[^ :|{}]\@=+
+	\ matchgroup=jiraTag start=+\%({\)@1<!{[^ :|{}]\@=+
 	\ matchgroup=jiraTag end=+}+
 	\ contained
 	\ contains=jiraError,jiraTagName,jiraAttrib,jiraAttribPunct,jiraAttribValue,@jiraStartTagHook
@@ -296,6 +297,8 @@ syn match   jiraTablePunct +|+
 " TODO doesn't handle ticket w/markup around it.
 syntax match jiraTicketId /\<[A-Z]\+-[0-9]\+\>/
 
+syn region jiraCode matchgroup=jiraCodeDelimiter start="{{" end="}}" keepend
+
 
 "hi def debug1 guifg=Lime
 "hi def debug2 guifg=Fuchsia
@@ -332,37 +335,34 @@ hi def link jiraAttribPunct		Comment
 hi def link jiraAttribValue		String
 hi def link jiraAttrib			Type
 
+hi def link jiraCodeDelimiter		Delimiter
 
 
-hi def link jiraNoformat              String
+hi def link jiraNoformat		String
 hi def link jiraNoformatTag		jiraTag
 "hi def link jiraNoformatStart         Type
 "hi def link jiraNoformatEnd           Type
 
-hi def link jiraQuote                     jiraTag
-hi def link jiraQuoteTitle                Title
-hi def link jiraQuoteEnd                  jiraTag
-hi def link jiraColor                     jiraTag
-hi def link jiraColorTitle                Title
-hi def link jiraColorEnd                  jiraTag
-hi def link jiraPanel                     jiraTag
-hi def link jiraPanelTitle                Title
-hi def link jiraPanelEnd                  jiraTag
-hi def link jiraCode                      jiraTag
-hi def link jiraCodeTitle                 Title
-hi def link jiraCodeEnd                   jiraTag
-hi def link jiraCodeTitle                 Title
-hi def link jiraCodeEnd                   jiraTag
+hi def link jiraQuote			jiraTag
+hi def link jiraQuoteTitle		Title
+hi def link jiraQuoteEnd		jiraTag
+hi def link jiraColor			jiraTag
+hi def link jiraColorTitle		Title
+hi def link jiraColorEnd		jiraTag
+hi def link jiraPanel			jiraTag
+hi def link jiraPanelTitle		Title
+hi def link jiraPanelEnd		jiraTag
+hi def link jiraCode			String
 
 hi def link jiraTableHeaderCell         jiraBold
 "hi def link jiraTableCell               jiraItalic
 "hi def link jiraTablePunct		DiffText
 
-hi def link jiraDash                      Special
-hi def link jiraHorizontalRule            Special
-hi def link jiraNewline                   Special
+hi def link jiraDash			Special
+hi def link jiraHorizontalRule		Special
+hi def link jiraNewline			Special
 
-hi def link jiraTicketId                  jiraLink
+hi def link jiraTicketId		jiraLink
 
 set foldmethod=syntax
 
