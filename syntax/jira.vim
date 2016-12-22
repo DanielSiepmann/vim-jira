@@ -1,4 +1,4 @@
-" Quit when a syntax file was already loaded
+﻿" Quit when a syntax file was already loaded
 if exists("b:current_syntax")
     finish
 endif
@@ -10,41 +10,94 @@ endif
 syn match jiraLineStart "^[<@]\@!" nextgroup=@jiraBlock,htmlSpecialChar
 
 syn cluster jiraBlock contains=jiraHeading,jiraBlockquote,jiraListMarker,jiraCodeBlock,jiraRule
-syn cluster jiraInline contains=jiraLineBreak,jiraLinkText,jiraItalic,jiraBold,jiraStrikethrough,jiraCode,jiraEscape,@htmlTop,jiraError
+syn cluster jiraInline contains=jiraLineBreak,jiraLinkText,jiraItalic,jiraBold,jiraBoldItalic,jiraStrikethrough,jiraCode,jiraEscape,@htmlTop,jiraError
 
-highlight jiraMarkOn ctermfg=yellow guifg=yellow
-highlight jiraMarkOff ctermfg=darkgrey guifg=darkgrey
-highlight jiraMarkCheck ctermfg=green guifg=green
-highlight jiraMarkError ctermfg=red guifg=red
-highlight jiraMarkWarn ctermfg=202 guifg=#ff5f00
-highlight jiraMarkYes ctermfg=green guifg=green
-highlight jiraMarkNo ctermfg=red guifg=red
-highlight jiraMarkInfo ctermfg=blue guifg=blue
-
-highlight jiraBold gui=bold cterm=bold
-highlight jiraItalic gui=italic cterm=underline
+highlight jiraBold term=bold cterm=bold gui=bold
+highlight jiraItalic term=italic cterm=italic gui=italic
+highlight jiraBoldItalic term=bold,italic cterm=bold,italic gui=bold,italic
 highlight jiraStrikethrough gui=italic cterm=italic guifg=#888888 ctermfg=darkgrey
 
 " TODO: Figure out how to make conceal chars the correct color
-"
-syntax match jiraMarkOn    /(on)/  " conceal cchar=⚙
-syntax match jiraMarkOff   /(off)/ " conceal cchar=⚪
-syntax match jiraMarkCheck /(\/)/  " conceal cchar=✔
-syntax match jiraMarkError /(x)/
-syntax match jiraMarkWarn  /(!)/   " conceal cchar=!
-syntax match jiraMarkYes   /(y)/
-syntax match jiraMarkNo    /(n)/
-syntax match jiraMarkInfo  /(?)/
-syntax cluster jiraMark contains=jiraMarkOn,jiraMarkOff,jiraMarkCheck,jiraMarkError,jiraMarkWarn,jiraMarkYes,jiraMarkNo
 
-syntax region jiraStrong start="\S\@<=\*\|\*\S\@=" end="\S\@<=\*\|\*\S\@=" keepend contains=jiraLineStart
-syntax region jiraEmphasis start="\S\@<=_\|_\S\@=" end="\S\@<=_\|_\S\@=" keepend contains=jiraLineStart
-syntax region jiraCitation start="\S\@<=??\|??\S\@=" end="\S\@<=??\|??\S\@=" keepend contains=jiraLineStart
-"syntax region jiraDeleted start="\%(^\|[^\w-]\)\@<=-[^\s-]" end="-\%($\|-[^\w-]\)\@="
-"syntax match jiraDeleted +\%(\%([^\w-]\|^\)\@<=-[^\s-]\)-[^-[:space:]][^-]*\(-\|-\S\@=\)+ excludenl
-"syntax region jiraInserted start="\S\@<=+\|+\S\@=" end="\S\@<=+\|+\S\@=" keepend contains=jiraLineStart
-syntax region jiraSuperscript start="\S\@<=\^\|\^\S\@=" end="\S\@<=\^\|\^\S\@=" keepend contains=jiraLineStart
-syntax region jiraSuperscript start="\S\@<=\~\|\~\S\@=" end="\S\@<=\~\|\~\S\@=" keepend contains=jiraLineStart
+syntax match jiraMarkSmile	/:)/
+syntax match jiraMarkSad	/:(/
+syntax match jiraMarkTongue	/:P/
+syntax match jiraMarkBigGrin	/:D/
+syntax match jiraMarkWink	/;)/
+syntax match jiraMarkYes	/(y)/
+syntax match jiraMarkNo		/(n)/
+syntax match jiraMarkInfo	/(i)/
+syntax match jiraMarkCheck	/(\/)/  " conceal cchar=✔
+syntax match jiraMarkError	/(x)/
+syntax match jiraMarkWarn	/(!)/   " conceal cchar=!
+syntax match jiraMarkAdd	/(+)/
+syntax match jiraMarkRemove	/(-)/
+syntax match jiraMarkHelp	/(?)/
+syntax match jiraMarkOn		/(on)/  " conceal cchar=⚙
+syntax match jiraMarkOff	/(off)/ " conceal cchar=⚪
+syntax match jiraMarkStarYellow	/(\*)/
+syntax match jiraMarkStarRed	/(\*r)/
+syntax match jiraMarkStarGreen	/(\*g)/
+syntax match jiraMarkStarBlue	/(\*b)/
+syntax match jiraMarkStarYellow	/(\*y)/
+syntax cluster jiraMark contains=jiraMarkSmile,jiraMarkSad,jiraMarkTongue,jiraMarkBigGrin,jiraMarkWink,jiraMarkYes,jiraMarkNo,jiraMarkInfo,jiraMarkCheck,jiraMarkError,jiraMarkWarn,
+	\ jiraMarkAdd,jiraMarkRemove,jiraMarkHelp,jiraMarkOn,jiraMarkOff,jiraMarkStarYellow,jiraMarkStarRed,jiraMarkStarGreen,jiraMarkStarBlue
+
+let s:concealends = has('conceal') ? ' concealends' : ''
+
+function! s:jiraRegionSingleLine(name, char)
+    " Jira region start happens:
+    "	- SYMBOL at start of newline followed by nonspace
+    "	- when nonword followed by SYMBOL followed by nonspace
+    " Only works on single line (TODO how to express that)
+    let l:charclass = '[' . a:char . '[:space:]]'
+    let l:notcharclass = '[^' . a:char . '[:space:]]'
+    exe 'syn match jira' . a:name
+	\ . ' /\v'
+		\ . '%(^|[^[:alnum:]]@<=)'
+		\ . a:char
+		\ . l:notcharclass . '+'
+		\ . '%('
+			\ . l:charclass . '+'
+			\ . l:notcharclass . '+'
+		\ . ')*'
+		\ . a:char
+		\ . '%($|[^[:alnum:]]@=)'
+		\ . '/'
+	\ . ' excludenl'
+	\ . s:concealends
+endfunction
+
+function! s:jiraRegionMultiLine(name, char)
+    " Jira region start happens:
+    "	- SYMBOL at start of newline followed by nonspace
+    "	- when nonword followed by SYMBOL followed by nonspace
+    " Only works on single line (TODO how to express that)
+    exe 'syn region jira' . a:name
+	\ . ' start="'
+		\ . '^'                . a:char . '[^' . a:char . '[:space:]]\@='
+		\ . '\|'
+		\ . '[^[:alnum:]]\@<=' . a:char . '[^' . a:char . '[:space:]]\@='
+		\ . '"'
+	\ . ' end="'
+		\ . '[^' . a:char . '[:space:]]\@<=' . a:char . '[^' . a:char . '[:alnum:]]\@='
+		\ . '\|'
+		\ . '[^' . a:char . '[:space:]]\@<=' . a:char . '$'
+		\ . '\|$'
+		\ . '"'
+	\ . ' keepend'
+ 	\ . ' contains=jiraStrong,jiraEmphasis,jiraStrongEmphasis,jiraCitation,jiraDeleted,jiraInserted,jiraSuperscript,jiraSubscript'
+	\ . s:concealends
+endfunction
+
+call s:jiraRegionSingleLine('Strong',	    '\*')
+call s:jiraRegionSingleLine('Emphasis',	    '_')
+exe 'syn match jiraStrongEmphasis /\v%(^|[^[:alnum:]]@<=)%(\*_|_\*)[^_*[:space:]]+%([_*[:space:]]+[^_*[:space:]]+)*(\*_|_\*)%($|[^[:alnum:]]@=)/ excludenl ' . s:concealends
+call s:jiraRegionSingleLine('Citation',	    '\?\?')
+call s:jiraRegionSingleLine('Deleted',	    '-')
+call s:jiraRegionSingleLine('Inserted',	    '\+')
+call s:jiraRegionSingleLine('Superscript',    '\^')
+call s:jiraRegionSingleLine('Subscript',	    '\~')
 syntax match jiraBlockquote /^bq\. .*/ excludenl
 
 
@@ -300,18 +353,19 @@ syntax match jiraTicketId /\<[A-Z]\+-[0-9]\+\>/
 syn region jiraCode matchgroup=jiraCodeDelimiter start="{{" end="}}" keepend
 
 
-"hi def debug1 guifg=Lime
-"hi def debug2 guifg=Fuchsia
-"hi def debug3 guifg=White	guibg=Lime
-"hi def debug4 guifg=White	guibg=Blue
-"hi def debug5 guifg=Blue	guibg=Red
-"hi def debug6 guifg=Orange	guibg=Gray
+hi def debug1 guifg=Lime
+hi def debug2 guifg=Fuchsia
+hi def debug3 guifg=White	guibg=Lime
+hi def debug4 guifg=White	guibg=Blue
+hi def debug5 guifg=Blue	guibg=Red
+hi def debug6 guifg=Orange	guibg=Gray
 
 "
 " HIGHLIGHTING
 "
 hi def link jiraStrong			jiraBold
 hi def link jiraEmphasis		jiraItalic
+hi def link jiraStrongEmphasis		jiraBoldItalic
 hi def link jiraCitation		jiraItalic
 hi def link jiraDeleted			jiraStrikethrough
 hi def link jiraInserted		Underlined
@@ -363,6 +417,27 @@ hi def link jiraHorizontalRule		Special
 hi def link jiraNewline			Special
 
 hi def link jiraTicketId		jiraLink
+
+hi def jiraMarkSmile ctermfg=darkyellow guifg=darkyellow
+hi def jiraMarkSad ctermfg=darkyellow guifg=darkyellow
+hi def jiraMarkTongue ctermfg=darkyellow guifg=darkyellow
+hi def jiraMarkBigGrin ctermfg=darkyellow guifg=darkyellow
+hi def jiraMarkWink ctermfg=darkyellow guifg=darkyellow
+hi def jiraMarkYes ctermfg=green guifg=green
+hi def jiraMarkNo ctermfg=red guifg=red
+hi def jiraMarkInfo ctermfg=blue guifg=blue
+hi def jiraMarkCheck ctermfg=green guifg=green
+hi def jiraMarkError ctermfg=red guifg=red
+hi def jiraMarkWarn ctermfg=202 guifg=#ff5f00
+hi def jiraMarkAdd ctermfg=green guifg=green
+hi def jiraMarkRemove ctermfg=red guifg=red
+hi def jiraMarkHelp ctermfg=blue guifg=blue
+hi def jiraMarkOn ctermfg=yellow guifg=yellow
+hi def jiraMarkOff ctermfg=darkgrey guifg=darkgrey
+hi def jiraMarkStarYellow ctermfg=yellow guifg=yellow
+hi def jiraMarkStarRed ctermfg=red guifg=red
+hi def jiraMarkStarGreen ctermfg=green guifg=green
+hi def jiraMarkStarBlue ctermfg=blue guifg=blue
 
 set foldmethod=syntax
 
