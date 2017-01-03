@@ -1,0 +1,2 @@
+# Since this is a vim repo, and vim on Unix doesn't like CRLFs, make all the things lf
+*       text=auto eol=lf
