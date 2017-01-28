@@ -33,31 +33,35 @@ function! jira#GetIssue(id)
   return g:jira_current_issue
 endfunction
 
-function! jira#PostDescription(id, description)
-  call jira#GetCredentials()
-  let url = g:vim_jira_rest_url . 'issue/' . a:id
-  let tmpfile = '/tmp/tmpjirafile-' . a:id
-
-  let data = json_encoding#Encode({"fields": {"description": a:description }})
-  " Wow, this took way too long to figure out.
-  " Un-encode newlines so Jira accepts it.
-  let datafix = substitute(data, '\\\\n', '\\n', 'g')
-  call writefile([datafix], tmpfile)
-  let cmd = 'curl -X PUT '. url .' --data @'. tmpfile .' -H "Content-Type: application/json" -s -k -u '. g:vim_jira_user .':'. g:vim_jira_pass 
-  " TODO: Error handling
-  let result = system(cmd)
-endfunction
-
-function! jira#PostBuffer()
-  let newdesc = join(getline(1,'$'), '\n')
-  call jira#PostDescription(b:issue.key, newdesc)
-  set nomodified
-endfunction
-
 " Extract an issue's description as an array of lines
 function! jira#GetDesc(issue)
   " Can be encoded as \r\n, or \n. I put \r in there for safety
   return split(a:issue.fields.description, '\r\n\|[\r\n]')
+endfunction
+
+" Return path to issue, containing project category, project and issue name
+function! jira#GetBreadcrumb(issue)
+  return [
+    \join([
+      \"'",
+      \a:issue.fields.project.projectCategory.name,
+      \"' / '",
+      \a:issue.fields.project.name,
+      \"' / '",
+      \a:issue.fields.summary,
+      \"'",
+    \],
+    \""),
+  \]
+endfunction
+
+" Return fields like in detail view of Jira
+function! jira#GetFields(issue)
+  return [
+    \join(["Type: ",a:issue.fields.issuetype.name,],""),
+    \join(["Priority: ",a:issue.fields.priority.name,],""),
+    \join(["Status: ",a:issue.fields.status.name,],""),
+  \]
 endfunction
 
 function! jira#CycleStatusIndicator()
@@ -74,7 +78,6 @@ function! jira#CycleStatusIndicator()
       execute 'normal! ciW' . next_word
     endif
   endfor
-
 endfunction
 
 function! jira#Browse()
@@ -86,10 +89,16 @@ function! jira#OpenBuffer(id)
   let issue = jira#GetIssue(a:id)
 
   let tmpfile = '/tmp/vim-jira-' . issue.key . '-desc.jira'
-  call writefile(jira#GetDesc(issue), tmpfile)
+  call writefile(
+    \jira#GetBreadcrumb(issue)
+    \+ [""]
+    \+ jira#GetFields(issue)
+    \+ [""]
+    \+ jira#GetDesc(issue)
+  \, tmpfile)
   execute 'vsplit ' . tmpfile
-  execute 'set ft=jira'
+  " execute 'set ft=jira'
   let b:issue = issue
-  autocmd BufWriteCmd <buffer> call jira#PostBuffer()
-
 endfunction
+
+" vim:tabstop=2:softtabstop=2:shiftwidth=2:expandtab:smarttab
