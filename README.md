@@ -1,14 +1,10 @@
 vim-jira
 ========
 
-Vim plugin to view/update JIRA issues
+Vim plugin wrapping [Ruby Gem JIRA CLI](https://github.com/ruby-jira/jira-cli).
 
-This'll probably end up being tailored to my particular workflow, which involves modifying the JIRA descriptions quite a bit.
+The plugin provides the following command:
 
-Implemented so far:
-* `:call jira#OpenBuffer('myID')` - fetches JIRA description in a new vertical split
-* `:call jira#PostBuffer()` - updates description with the contents of the buffer
-
-TODO:
-* Better bindings for the above
-* Browsable list of issues (perhaps a small sidebar?)
+* `JiraIssue IssueId` - Open new vsplit with given Jira issue 
+* `Jira your command` - Open new vsplit with output of Jira
+  command, e.g.: `Jira issue jql assignee = "you" and status not in (Closed)`
