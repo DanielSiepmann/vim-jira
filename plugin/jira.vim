@@ -11,4 +11,5 @@ if &cp || (exists('g:loaded_jira_vim') && g:loaded_jira_vim)
 endif
 let g:loaded_jira_vim = 1
 
-command JiraBrowse call jira#Browse()
+command! -bang -nargs=* Jira call jira#Command(<q-args>)
+command! -bang -nargs=* JiraIssue call jira#Issue(<q-args>)

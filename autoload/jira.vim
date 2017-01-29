@@ -6,99 +6,46 @@
 " script type: plugin
 "
 
-" Prompt user if we need info
-function! jira#GetCredentials()
-  if !exists('g:vim_jira_url')
-    let g:vim_jira_url = input("JIRA url? ")
-  endif
-  if !exists('g:vim_jira_user')
-    let g:vim_jira_user = input("JIRA user? ")
-  endif
-  if !exists('g:vim_jira_pass')
-    let g:vim_jira_pass = inputsecret("JIRA password? ")
-  endif
-  let g:vim_jira_rest_url = g:vim_jira_url . '/rest/api/2/'
-endfunction
+if !exists("g:vim_jira_command")
+  let g:vim_jira_command = "jira"
+endif
 
-" Grab issue from the server
+" Grab issue
 function! jira#GetIssue(id)
-  call jira#GetCredentials()
-  let url = g:vim_jira_rest_url . 'issue/' . a:id
-  let cmd = 'curl '. url .' -s -k -u '. g:vim_jira_user .':'. g:vim_jira_pass
-
-  let data_json = system(cmd)
-
-  let g:jira_current_issue = json_encoding#Decode(data_json)
-
-  return g:jira_current_issue
+  silent !clear
+  return split(system(g:vim_jira_command . " issue " . a:id), '\r\n\|[\r\n]')[3:-2]
 endfunction
 
-" Extract an issue's description as an array of lines
-function! jira#GetDesc(issue)
-  " Can be encoded as \r\n, or \n. I put \r in there for safety
-  return split(a:issue.fields.description, '\r\n\|[\r\n]')
+" Grab command output
+function! jira#SubmitCommand(command)
+  silent !clear
+  return split(system(g:vim_jira_command . " " . a:command), '\r\n\|[\r\n]')[3:-2]
 endfunction
 
-" Return path to issue, containing project category, project and issue name
-function! jira#GetBreadcrumb(issue)
-  return [
-    \join([
-      \"'",
-      \a:issue.fields.project.projectCategory.name,
-      \"' / '",
-      \a:issue.fields.project.name,
-      \"' / '",
-      \a:issue.fields.summary,
-      \"'",
-    \],
-    \""),
-  \]
+" Open up a new split with the given JIRA Command
+function! jira#Command(command)
+  let tempfile = '/tmp/vim-jira-' . sha256(a:command) . '-desc.jira'
+  call writefile(jira#SubmitCommand(a:command), tempfile)
+
+  call jira#OpenBuffer(tempfile)
 endfunction
 
-" Return fields like in detail view of Jira
-function! jira#GetFields(issue)
-  return [
-    \join(["Type: ",a:issue.fields.issuetype.name,],""),
-    \join(["Priority: ",a:issue.fields.priority.name,],""),
-    \join(["Status: ",a:issue.fields.status.name,],""),
-  \]
+" Open the given issue
+function! jira#Issue(id)
+  let tempfile = '/tmp/vim-jira-' . a:id . '-desc.jira'
+  call writefile(jira#GetIssue(a:id), tempfile)
+
+  call jira#OpenBuffer(tempfile)
 endfunction
 
-function! jira#CycleStatusIndicator()
-  if (! exists('g:jira_status_icons'))
-    let g:jira_status_icons = ['(off)', '(on)', '(/)', '(!)', '(?)', '(n)', '(y)']
-  endif
-
-  let word = expand('<cWORD>')
-  let index = 0
-  for i in g:jira_status_icons
-    let index += 1
-    if (i == word)
-      let next_word = g:jira_status_icons[ index - len(g:jira_status_icons) ]
-      execute 'normal! ciW' . next_word
-    endif
-  endfor
-endfunction
-
-function! jira#Browse()
-  call jira#GetCredentials()
-endfunction
-
-" Open up a new split with the given issue
-function! jira#OpenBuffer(id)
-  let issue = jira#GetIssue(a:id)
-
-  let tmpfile = '/tmp/vim-jira-' . issue.key . '-desc.jira'
-  call writefile(
-    \jira#GetBreadcrumb(issue)
-    \+ [""]
-    \+ jira#GetFields(issue)
-    \+ [""]
-    \+ jira#GetDesc(issue)
-  \, tmpfile)
-  execute 'vsplit ' . tmpfile
-  " execute 'set ft=jira'
-  let b:issue = issue
+" Open up a new split with the given tempfile
+function! jira#OpenBuffer(tempfile)
+  execute 'vsplit ' . a:tempfile
+  " Remove borders on first column and last. Afterwars strip trailing whitespace.
+  execute '%s/^..//e | %s/ [^ ]*$//e | %s/┤$//e | %s/\s\+$//e'
+  " Prevent writes
+  execute 'setlocal buftype=nofile'
+  execute 'normal! gg | normal! redraw!'
 endfunction
 
 " vim:tabstop=2:softtabstop=2:shiftwidth=2:expandtab:smarttab
