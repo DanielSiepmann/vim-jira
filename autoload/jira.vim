@@ -1,25 +1,23 @@
 "=============================================================================
-" File: jira.vim
 " Author: Jemma Nelson <pink.fwip@gmail.com>
-" WebPage: http://github.com/Fwip/vim-jira
+" Author: Daniel Siepmann <coding@daniel-siepmann.de>
 " License: BSD
 " script type: plugin
-"
 
-if !exists("g:vim_jira_command")
-  let g:vim_jira_command = "jira"
+if !exists("g:vim_jira_wrapper_command")
+  let g:vim_jira_wrapper_command = "jira"
 endif
 
 " Grab issue
 function! jira#GetIssue(id)
   silent !clear
-  return split(system(g:vim_jira_command . " issue " . a:id), '\r\n\|[\r\n]')[3:-2]
+  return split(system(g:vim_jira_wrapper_command . " issue " . a:id), '\r\n\|[\r\n]')[3:-2]
 endfunction
 
 " Grab command output
 function! jira#SubmitCommand(command)
   silent !clear
-  return split(system(g:vim_jira_command . " " . a:command), '\r\n\|[\r\n]')[3:-2]
+  return split(system(g:vim_jira_wrapper_command . " " . a:command), '\r\n\|[\r\n]')[3:-2]
 endfunction
 
 " Open up a new split with the given JIRA Command

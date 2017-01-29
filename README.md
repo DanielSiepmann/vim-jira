@@ -1,5 +1,5 @@
-vim-jira
-========
+vim-jira-wrapper
+================
 
 Vim plugin wrapping [Ruby Gem JIRA CLI](https://github.com/ruby-jira/jira-cli).
 
