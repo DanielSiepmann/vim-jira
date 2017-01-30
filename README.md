@@ -1,7 +1,7 @@
 vim-jira-wrapper
 ================
 
-Vim plugin wrapping [Ruby Gem JIRA CLI](https://github.com/ruby-jira/jira-cli).
+Vim plugin wrapping [Ruby Gem Terjira](https://github.com/keepcosmos/terjira).
 
 The plugin provides the following command:
 
